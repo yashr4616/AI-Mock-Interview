@@ -7,15 +7,18 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background: #f4f4f4;
+            background: #F0F9FF;
             margin: 0;
             padding: 0;
             text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
         }
 
         .container {
-            max-width: 700px;
-            margin: 30px auto;
+            width: 50%;
             padding: 20px;
             background: #fff;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
@@ -24,9 +27,11 @@
 
         select,
         button {
-            padding: 10px;
+            padding: 10px 30px;
             margin: 10px 0;
             font-size: 16px;
+            border: 2px solid;
+            border-radius: 16px;
         }
 
         .chat-box {
@@ -53,6 +58,19 @@
             color: green;
             font-weight: bold;
         }
+
+        .jobrole{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap:30px;
+        }
+
+        .startbtn{
+            background-color: aqua;
+            color: black;
+        }
+
     </style>
 </head>
 
@@ -60,13 +78,17 @@
     <div class="container">
         <h2>🎙️ AI Mock Interviewer</h2>
 
-        <label for="role">Choose a Job Role:</label>
+        
+        <div class="jobrole">
+            <label for="role">Choose a Job Role:</label>
         <select id="role">
             <option value="">-- Select Role --</option>
             <option value="software engineer">Software Engineer</option>
             <option value="data scientist">Data Scientist</option>
-        </select><br>
-        <button onclick="startInterview()">Start Interview</button>
+        </select>
+        </div>
+        <br>
+        <button onclick="startInterview()" class="startbtn">Start Interview</button>
 
         <div class="chat-box" id="chatBox"></div>
 

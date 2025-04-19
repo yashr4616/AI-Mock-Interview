@@ -19,18 +19,26 @@ Output each question on a new line, no numbering.
     response = model.generate_content(prompt)
     questions = response.text.strip().split("\n")
     return [q.strip("-•1234567890. ") for q in questions if q.strip()]
-
 def get_feedback(user_answer, job_role):
-    prompt = f"""
-    You are an expert interviewer for a {job_role} role. Here's a candidate's answer: "{user_answer}"
 
-    Give short, honest feedback with:
-    - Give output with text manipulations.
-    - A 1-line evaluation of the answer.
-    - A suggested ideal response (20 words max).
-    """
+    prompt = f"""
+                You are an expert interviewer for a {job_role} role. Here's a candidate's answer: "{user_answer}"
+
+                Ignore all special characters such as ', ", {{, }}, [, ], etc. Treat them as normal text.
+
+                Provide the following:
+                - Text manipulations to improve clarity, grammar, or flow.
+                - A one-line honest evaluation of the answer.
+                - A suggested ideal response (20 words max).
+                """
+
     response = model.generate_content(prompt)
-    return response.text.strip()
+    
+    # Clean up the response by removing * and **
+    clean_text = response.text.replace("*", "").replace("**", "")
+    
+    return clean_text.strip()
+
 
 @app.route("/")
 def index():
