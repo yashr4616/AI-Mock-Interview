@@ -90,6 +90,5 @@ def get_response():
         return jsonify({"response": f"{feedback}\n\nThat wraps up the interview. You're free to panic now. 😈"})
 
 if __name__ == "__main__":
-    app.run(debug=True)
     app.run(host="0.0.0.0", port=10000)
     # app.run(debug=True)
