@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>AI Mock Interviewer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 30px auto;
+            padding: 20px;
+            background: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+
+        select,
+        button {
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 16px;
+        }
+
+        .chat-box {
+            text-align: left;
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 10px;
+            border: 1px solid #ccc;
+            margin-top: 15px;
+            background: #fafafa;
+            border-radius: 8px;
+        }
+
+        .message {
+            margin-bottom: 10px;
+        }
+
+        .user {
+            color: blue;
+            font-weight: bold;
+        }
+
+        .bot {
+            color: green;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h2>🎙️ AI Mock Interviewer</h2>
+
+        <label for="role">Choose a Job Role:</label>
+        <select id="role">
+            <option value="">-- Select Role --</option>
+            <option value="software engineer">Software Engineer</option>
+            <option value="data scientist">Data Scientist</option>
+        </select><br>
+        <button onclick="startInterview()">Start Interview</button>
+
+        <div class="chat-box" id="chatBox"></div>
+
+        <button onclick="startListening()">🎤 Speak</button>
+        <button onclick="sendExit()">❌ End Interview</button>
+    </div>
+
+    <script>
+        let recognition;
+
+        // ✅ Cross-browser speech recognition support
+        if ('webkitSpeechRecognition' in window) {
+            recognition = new webkitSpeechRecognition();
+        } else if ('SpeechRecognition' in window) {
+            recognition = new SpeechRecognition();
+        } else {
+            alert("Sorry, your browser does not support speech recognition.");
+        }
+
+        let isInterviewStarted = false;
+
+        function startInterview() {
+            const role = document.getElementById("role").value;
+            if (!role) return alert("Please select a role!");
+
+            fetch("/start_interview", {
+                method: "POST",
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ role })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    isInterviewStarted = true;
+                    appendMessage("bot", data.response);
+                    speak(data.response);
+                });
+        }
+
+        function sendMessage(text) {
+            if (!isInterviewStarted) return;
+            appendMessage("user", text);
+
+            fetch("/get_response", {
+                method: "POST",
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: text })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    appendMessage("bot", data.response);
+                    speak(data.response);
+                });
+        }
+
+        function sendExit() {
+            sendMessage("exit");
+        }
+
+        function startListening() {
+            if (!recognition) {
+                alert("Speech recognition is not supported in your browser.");
+                return;
+            }
+
+            recognition.lang = 'en-US';
+            recognition.interimResults = false;
+            recognition.continuous = false;
+
+            recognition.start();
+
+            recognition.onresult = function (event) {
+                const text = event.results[0][0].transcript;
+                sendMessage(text);
+            };
+
+            recognition.onerror = function (event) {
+                alert("Speech recognition error: " + event.error);
+            };
+
+            recognition.onend = function () {
+                console.log("Speech recognition ended.");
+            };
+        }
+
+        function appendMessage(sender, text) {
+            const chatBox = document.getElementById("chatBox");
+            const msg = document.createElement("div");
+            msg.classList.add("message");
+            msg.innerHTML = `<span class="${sender}">${sender === "user" ? "You" : "Interviewer"}:</span> ${text}`;
+            chatBox.appendChild(msg);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function speak(text) {
+            const utter = new SpeechSynthesisUtterance(text);
+            utter.rate = 1;
+            utter.pitch = 1;
+            speechSynthesis.speak(utter);
+        }
+    </script>
+
+</body>
+
+</html>
